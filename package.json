@@ -1,0 +1,36 @@
+{
+  "name": "user-todo-management",
+  "version": "1.0.0",
+  "description": "To manage user todos",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app",
+    "dev": "nodemon app",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kunalmandot/user-todo-management.git"
+  },
+  "author": "Kunal Jain",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kunalmandot/user-todo-management/issues"
+  },
+  "homepage": "https://github.com/kunalmandot/user-todo-management#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.11.15"
+  },
+  "devDependencies": {
+    "chai": "^4.3.0",
+    "eslint": "^7.19.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "mocha": "^8.3.0",
+    "mock-express-response": "^0.3.0",
+    "nodemon": "^2.0.7"
+  }
+}

@@ -1,2 +1,2 @@
 # user-todo-management
-To manage user 
+To manage user todos 
