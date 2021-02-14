@@ -1,9 +1,11 @@
 const express = require('express');
 
+const { signup } = require('../components/account/account.controller');
+
 const router = express.Router();
 
 router.route('/signup')
-  .post();
+  .post(signup);
 
 router.route('/login')
   .post();

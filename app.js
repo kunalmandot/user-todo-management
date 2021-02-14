@@ -19,11 +19,17 @@ mongoose.connect('mongodb://localhost:27017/usertodo', {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// accounts route
+// Accounts route
 app.use('/api/accounts', accounts);
 
-// todos route
+// Todos route
 app.use('/api/todos', todos);
+
+// Error handler middleware
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  res.status(500).json({ msg: 'Something went wrong.' });
+});
 
 app.listen(port, host, () => {
   console.log(`Server started on ${host} : ${port}`);
