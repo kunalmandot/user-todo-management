@@ -5,10 +5,12 @@ const createUser = async (email, password) => {
     email,
     password,
   });
-  const savedUser = await user.save();
-  return savedUser;
+  return user.save();
 };
+
+const findByEmail = async (email) => User.findOne({ email });
 
 module.exports = {
   createUser,
+  findByEmail,
 };

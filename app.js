@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 
 const { port, host } = require('./config');
 const accounts = require('./src/routes/accounts');
@@ -15,9 +16,12 @@ mongoose.connect('mongodb://localhost:27017/usertodo', {
   useCreateIndex: true,
 });
 
-// Body Parser Middleware
+// Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Cookie parser middleware
+app.use(cookieParser());
 
 // Accounts route
 app.use('/api/accounts', accounts);

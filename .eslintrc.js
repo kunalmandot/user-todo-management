@@ -15,7 +15,7 @@ module.exports = {
     'no-console': 0,
     // 'import/no-extraneous-dependencies': 0,
     // 'no-undef': 0,
-    // 'no-underscore-dangle': 0,
-    // 'max-len': 0,
+    'no-underscore-dangle': 0,
+    'max-len': [2, 110],
   },
 };
