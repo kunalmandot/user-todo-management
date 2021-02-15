@@ -7,6 +7,9 @@ const createBlackListToken = async (token) => {
   return blackListToken.save();
 };
 
+const findTokenByToken = async (token) => BlackListToken.findOne({ token });
+
 module.exports = {
   createBlackListToken,
+  findTokenByToken,
 };

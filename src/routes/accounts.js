@@ -1,6 +1,7 @@
 const express = require('express');
 
 const { signup, login, logout } = require('../components/account/account.controller');
+const authenticateToken = require('../middlewares/authenticate-token');
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.route('/change-password')
   .put();
 
 router.route('/logout')
-  .delete(logout);
+  .delete(authenticateToken, logout);
 
 router.route('/block')
   .put();
