@@ -22,10 +22,4 @@ router.route('/change-password')
 router.route('/logout')
   .delete(authenticateToken, logout);
 
-router.route('/block')
-  .put();
-
-router.route('/unblock')
-  .put();
-
 module.exports = router;
