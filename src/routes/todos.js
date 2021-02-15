@@ -1,15 +1,24 @@
 const express = require('express');
 
+const {
+  getTodos,
+  postTodo,
+  getTodo,
+  putTodo,
+  deleteTodo,
+} = require('../components/todo/todo.controller');
+const authenticateToken = require('../middlewares/authenticate-token');
+
 const router = express.Router();
 
 router.route('/')
-  .get()
-  .post();
+  .get(authenticateToken, getTodos)
+  .post(authenticateToken, postTodo);
 
 router.route('/:todoId')
-  .get()
-  .put()
-  .delete();
+  .get(authenticateToken, getTodo)
+  .put(authenticateToken, putTodo)
+  .delete(authenticateToken, deleteTodo);
 
 router.route('/:todoId/move-to-trash')
   .put();
