@@ -15,6 +15,11 @@ const comparePassword = async (pass1, pass2) => bcrypt.compare(pass1, pass2);
 
 const generateAccessToken = (userId) => jwt.sign({ userId }, 'random string', { expiresIn: '30d' });
 
+const generateHashedPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
+
 const signup = async (req, res, next) => {
   try {
     const result = await signupSchema.validateAsync(req.body);
@@ -76,7 +81,8 @@ const changePassword = async (req, res, next) => {
       if (!validUser) {
         return res.status(400).json({ msg: 'Old password should be correct.' });
       }
-      await updateUserPasswordById(userId, result.newPassword);
+      const hashedPassword = await generateHashedPassword(result.newPassword);
+      await updateUserPasswordById(userId, hashedPassword);
       return res.json({ msg: 'You changed password successfully.' });
     }
     return next();
