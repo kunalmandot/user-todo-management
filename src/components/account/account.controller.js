@@ -32,10 +32,10 @@ const signup = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(422).json({ msg: err.message });
+      return res.status(400).json({ msg: err.message });
     }
     if (err.name === 'MongoError' && err.code === 11000) {
-      return res.status(400).json({ msg: 'Email already taken.' });
+      return res.status(422).json({ msg: 'Email already taken.' });
     }
     return next();
   }
@@ -47,12 +47,12 @@ const login = async (req, res, next) => {
 
     const user = await findUserByEmail(result.email);
     if (!user) {
-      return res.status(400).json({ msg: 'Email is not valid.' });
+      return res.status(404).json({ msg: 'Email was not found.' });
     }
 
     const validUser = await comparePassword(result.password, user.password);
     if (!validUser) {
-      return res.status(400).json({ msg: 'Incorrect password.' });
+      return res.status(401).json({ msg: 'Incorrect password.' });
     }
 
     const token = generateAccessToken(user._id);
@@ -63,7 +63,7 @@ const login = async (req, res, next) => {
     return res.json({ msg: 'Logged in successfully.' });
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(422).json({ msg: err.message });
+      return res.status(400).json({ msg: err.message });
     }
     return next();
   }
@@ -79,7 +79,7 @@ const changePassword = async (req, res, next) => {
     if (user) {
       const validUser = await comparePassword(result.oldPassword, user.password);
       if (!validUser) {
-        return res.status(400).json({ msg: 'Old password should be correct.' });
+        return res.status(401).json({ msg: 'Old password should be correct.' });
       }
       const hashedPassword = await generateHashedPassword(result.newPassword);
       await updateUserPasswordById(userId, hashedPassword);
@@ -88,7 +88,7 @@ const changePassword = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(422).json({ msg: err.message });
+      return res.status(400).json({ msg: err.message });
     }
     return next();
   }
