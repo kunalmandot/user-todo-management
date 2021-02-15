@@ -1,23 +1,25 @@
 const express = require('express');
 
+const {
+  signup,
+  login,
+  changePassword,
+  logout,
+} = require('../components/account/account.controller');
+const authenticateToken = require('../middlewares/authenticate-token');
+
 const router = express.Router();
 
 router.route('/signup')
-  .post();
+  .post(signup);
 
 router.route('/login')
-  .post();
+  .post(login);
 
 router.route('/change-password')
-  .put();
+  .put(authenticateToken, changePassword);
 
 router.route('/logout')
-  .delete();
-
-router.route('/block')
-  .put();
-
-router.route('/unblock')
-  .put();
+  .delete(authenticateToken, logout);
 
 module.exports = router;
