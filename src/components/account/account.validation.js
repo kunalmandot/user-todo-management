@@ -50,9 +50,33 @@ const loginSchema = Joi.object({
 });
 
 const changePasswordSchema = Joi.object({
-  oldPassword: Joi.string().min(8).max(16).required(),
-  newPassword: Joi.string().min(8).max(16).required(),
-  confirmNewPassword: Joi.ref('newPassword'),
+  oldPassword: Joi.string()
+    .min(8)
+    .max(16)
+    .required()
+    .messages({
+      'string.base': 'Old password should be a type of string.',
+      'string.min': 'Old password should contain at least 8 characters.',
+      'string.max': 'Old password should contain at most 16 characters.',
+      'any.required': 'Old password should be present.',
+    }),
+  newPassword: Joi.string()
+    .min(8)
+    .max(16)
+    .required()
+    .messages({
+      'string.base': 'New password should be a type of string.',
+      'string.min': 'New password should contain at least 8 characters.',
+      'string.max': 'New password should contain at most 16 characters.',
+      'any.required': 'New password should be present.',
+    }),
+  confirmNewPassword: Joi.string()
+    .valid(Joi.ref('newPassword'))
+    .required()
+    .messages({
+      'any.required': 'Confirm new password should be present.',
+      'any.only': 'New password and confirm new password should be same.',
+    }),
 });
 
 module.exports = {
