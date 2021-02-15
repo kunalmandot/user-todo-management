@@ -1,6 +1,6 @@
 const Todo = require('./todo.model');
 
-const findTodosByCreateBy = async (createdBy) => Todo.find({ createdBy });
+const findTodosByCreateBy = async (createdBy) => Todo.find({ $and: [{ createdBy }, { isActive: true }] });
 
 const createTodo = async (createdBy, title, labelText, labelColour) => {
   const todo = new Todo({
