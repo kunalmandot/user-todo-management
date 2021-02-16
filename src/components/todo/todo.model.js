@@ -39,15 +39,6 @@ const TaskSchema = mongoose.Schema({
       ref: 'User',
     },
   },
-  deleted: {
-    at: {
-      type: Date,
-    },
-    by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  },
 });
 
 const TodoSchema = mongoose.Schema({
