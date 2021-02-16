@@ -22,11 +22,16 @@ const createOrUpdateTodoSchema = Joi.object({
 });
 
 const shareOrUnshareTodoSchema = Joi.object({
-  email: Joi.string().email().required(),
+  sharedWithEmail: Joi.string().email().required(),
 });
 
 const createOrUpdateTaskSchema = Joi.object({
-  text: Joi.string().required(),
+  taskText: Joi.string()
+    .required()
+    .messages({
+      'string.base': 'Task should be a type of string.',
+      'any.required': 'Task should be present.',
+    }),
 });
 
 module.exports = {

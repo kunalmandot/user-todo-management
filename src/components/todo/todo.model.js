@@ -64,7 +64,7 @@ const TodoSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  task: {
+  tasks: {
     type: [TaskSchema],
     default: undefined,
   },
@@ -97,7 +97,7 @@ const TodoSchema = mongoose.Schema({
       ref: 'User',
     },
   },
-  deleted: {
+  trashed: {
     at: {
       type: Date,
     },
@@ -109,7 +109,5 @@ const TodoSchema = mongoose.Schema({
 });
 
 TodoSchema.index({ createdBy: 1, title: 1 }, { unique: true });
-TodoSchema.index({ title: 1, task: 1 }, { unique: true });
-TodoSchema.index({ title: 1, sharedWith: 1 }, { unique: true });
 
 module.exports = mongoose.model('Todo', TodoSchema);

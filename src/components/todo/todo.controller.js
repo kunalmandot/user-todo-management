@@ -4,8 +4,9 @@ const {
   findTodoById,
   updateTodoById,
   deleteTodoById,
+  addTaskToTodoByTodoId,
 } = require('./todo.dal');
-const { createOrUpdateTodoSchema } = require('./todo.validation');
+const { createOrUpdateTodoSchema, createOrUpdateTaskSchema } = require('./todo.validation');
 
 const throwResourceNotFoundError = (res, id) => res.status(404).json({ msg: `The TODO item with id ${id} was not found.` });
 
@@ -78,7 +79,7 @@ const putTodo = async (req, res, next) => {
     if (String(todo.createdBy) !== userId) {
       return throwUnauthorizedError(res);
     }
-    const updatedTodo = await updateTodoById(todoId, result.title, result.labelText, result.labelColour);
+    const updatedTodo = await updateTodoById(userId, todoId, result.title, result.labelText, result.labelColour);
     return res.json({ msg: 'Updated successfully.', todo: updatedTodo });
   } catch (err) {
     if (err.isJoi === true) {
@@ -111,10 +112,43 @@ const deleteTodo = async (req, res, next) => {
   }
 };
 
+const postTask = async (req, res, next) => {
+  const { todoId } = req.params;
+  if (todoId.length !== 24) {
+    return throwResourceNotFoundError(res, todoId);
+  }
+  try {
+    const result = await createOrUpdateTaskSchema.validateAsync(req.body);
+
+    const todo = await findTodoById(todoId);
+    if (todo === null) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+    if (String(todo.createdBy) !== req.user.userId) {
+      return throwUnauthorizedError(res);
+    }
+    const taskExist = todo.tasks.find((task) => task.text === result.taskText);
+    if (taskExist) {
+      return res.status(422).json({ msg: 'Task already taken.' });
+    }
+    const task = await addTaskToTodoByTodoId(todoId, result.taskText);
+    if (task) {
+      return res.json({ msg: 'Task created successfully.' });
+    }
+    return next();
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(400).json({ msg: err.message });
+    }
+    return next();
+  }
+};
+
 module.exports = {
   getTodos,
   postTodo,
   getTodo,
   putTodo,
   deleteTodo,
+  postTask,
 };

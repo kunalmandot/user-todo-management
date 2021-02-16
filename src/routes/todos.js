@@ -6,6 +6,7 @@ const {
   getTodo,
   putTodo,
   deleteTodo,
+  postTask,
 } = require('../components/todo/todo.controller');
 const authenticateToken = require('../middlewares/authenticate-token');
 
@@ -33,7 +34,7 @@ router.route('/:todoId/unshare')
   .delete();
 
 router.route('/:todoId/tasks')
-  .post();
+  .post(authenticateToken, postTask);
 
 router.route('/:todoId/tasks/:taskId')
   .put()
