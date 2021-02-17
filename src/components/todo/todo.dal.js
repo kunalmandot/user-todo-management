@@ -30,11 +30,15 @@ const addTaskToTodoByTodoId = async (todoId, taskText) => Todo.findByIdAndUpdate
   { new: true },
 );
 
-const findTaskByTodoIdAndTaskId = async (todoId, taskId) => Todo.findOne({ $and: [{ _id: todoId }, { 'tasks._id': taskId }] });
-
 const updateTaskTextByTodoIdAndTaskId = async (userId, todoId, taskId, taskText) => Todo.findOneAndUpdate(
   { $and: [{ _id: todoId }, { 'tasks._id': taskId }] },
   { $set: { 'tasks.$.text': taskText, 'tasks.$.updated': { at: new Date(), by: userId } } },
+  { new: true },
+);
+
+const updateTaskStatusByTodoIdAndTaskId = async (userId, todoId, taskId, taskStatus) => Todo.findOneAndUpdate(
+  { $and: [{ _id: todoId }, { 'tasks._id': taskId }] },
+  { $set: { 'tasks.$.checked': taskStatus, 'tasks.$.updated': { at: new Date(), by: userId } } },
   { new: true },
 );
 
@@ -51,7 +55,7 @@ module.exports = {
   updateTodoById,
   deleteTodoById,
   addTaskToTodoByTodoId,
-  findTaskByTodoIdAndTaskId,
   updateTaskTextByTodoIdAndTaskId,
+  updateTaskStatusByTodoIdAndTaskId,
   deleteTaskByTodoIdAndTaskId,
 };

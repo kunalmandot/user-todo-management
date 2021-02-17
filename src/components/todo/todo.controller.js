@@ -5,8 +5,8 @@ const {
   updateTodoById,
   deleteTodoById,
   addTaskToTodoByTodoId,
-  findTaskByTodoIdAndTaskId,
   updateTaskTextByTodoIdAndTaskId,
+  updateTaskStatusByTodoIdAndTaskId,
   deleteTaskByTodoIdAndTaskId,
 } = require('./todo.dal');
 const { createOrUpdateTodoSchema, createOrUpdateTaskSchema } = require('./todo.validation');
@@ -27,22 +27,28 @@ const validateTodo = async (userId, todoId) => {
   return todo;
 };
 
-const validateTask = async (todoId, taskId) => {
+const validateTask = async (tasks, taskId) => {
   if (taskId.length !== 24) {
     return false;
   }
-  const task = await findTaskByTodoIdAndTaskId(todoId, taskId);
-  if (task === null) {
+  if (typeof tasks === 'object') {
+    const taskExist = tasks.find((task) => String(task._id) === taskId);
+    if (taskExist) {
+      return taskExist;
+    }
     return false;
   }
-  return true;
+  return false;
 };
 
-const taskExistence = (tasks, taskText) => {
+const taskTextExistence = (tasks, taskText, taskId) => {
   if (typeof tasks === 'object') {
     const taskExist = tasks.find((task) => task.text === taskText);
     if (taskExist) {
-      return true;
+      if (String(taskExist._id) !== taskId) {
+        return true;
+      }
+      return false;
     }
     return false;
   }
@@ -142,7 +148,7 @@ const postTask = async (req, res, next) => {
 
     const result = await createOrUpdateTaskSchema.validateAsync(req.body);
 
-    if (taskExistence(todo.tasks, result.taskText) === true) {
+    if (taskTextExistence(todo.tasks, result.taskText, null) === true) {
       return res.status(422).json({ msg: 'Task already taken.' });
     }
 
@@ -168,11 +174,11 @@ const putTask = async (req, res, next) => {
 
     const result = await createOrUpdateTaskSchema.validateAsync(req.body);
 
-    if (await validateTask(todoId, taskId) === false) {
+    if (await validateTask(todo.tasks, taskId) === false) {
       return throwResourceNotFoundError(res, taskId);
     }
 
-    if (taskExistence(todo.tasks, result.taskText) === true) {
+    if (taskTextExistence(todo.tasks, result.taskText, taskId) === true) {
       return res.status(422).json({ msg: 'Task already taken.' });
     }
 
@@ -186,16 +192,40 @@ const putTask = async (req, res, next) => {
   }
 };
 
+const putTaskStatus = async (req, res, next) => {
+  try {
+    const { todoId, taskId } = req.params;
+    const { userId } = req.user;
+
+    const todo = await validateTodo(userId, todoId);
+    if (todo === false) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+
+    const task = await validateTask(todo.tasks, taskId);
+    if (task === false) {
+      return throwResourceNotFoundError(res, taskId);
+    }
+    const taskStatus = (task.checked === false);
+
+    const updatedTodoWithTask = await updateTaskStatusByTodoIdAndTaskId(userId, todoId, taskId, taskStatus);
+    return res.json({ msg: 'Task updated successfully.', todo: updatedTodoWithTask });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const deleteTask = async (req, res, next) => {
   try {
     const { todoId, taskId } = req.params;
     const { userId } = req.user;
 
-    if (await validateTodo(userId, todoId) === false) {
+    const todo = await validateTodo(userId, todoId);
+    if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    if (await validateTask(todoId, taskId) === false) {
+    if (await validateTask(todo.tasks, taskId) === false) {
       return throwResourceNotFoundError(res, taskId);
     }
 
@@ -214,5 +244,6 @@ module.exports = {
   deleteTodo,
   postTask,
   putTask,
+  putTaskStatus,
   deleteTask,
 };

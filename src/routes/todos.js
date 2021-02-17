@@ -8,20 +8,23 @@ const {
   deleteTodo,
   postTask,
   putTask,
+  putTaskStatus,
   deleteTask,
 } = require('../components/todo/todo.controller');
 const authenticateToken = require('../middlewares/authenticate-token');
 
 const router = express.Router();
 
+router.use(authenticateToken);
+
 router.route('/')
-  .get(authenticateToken, getTodos)
-  .post(authenticateToken, postTodo);
+  .get(getTodos)
+  .post(postTodo);
 
 router.route('/:todoId')
-  .get(authenticateToken, getTodo)
-  .put(authenticateToken, putTodo)
-  .delete(authenticateToken, deleteTodo);
+  .get(getTodo)
+  .put(putTodo)
+  .delete(deleteTodo);
 
 router.route('/trashed')
   .get();
@@ -39,13 +42,13 @@ router.route('/:todoId/restore')
 //   .delete();
 
 router.route('/:todoId/tasks')
-  .post(authenticateToken, postTask);
+  .post(postTask);
 
 router.route('/:todoId/tasks/:taskId')
-  .put(authenticateToken, putTask)
-  .delete(authenticateToken, deleteTask);
+  .put(putTask)
+  .delete(deleteTask);
 
-router.route('/:todoId/tasks/:taskId/complete')
-  .put();
+router.route('/:todoId/tasks/:taskId/change-status')
+  .put(putTaskStatus);
 
 module.exports = router;
