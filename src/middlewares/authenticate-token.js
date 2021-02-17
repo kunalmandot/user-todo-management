@@ -21,7 +21,7 @@ const authenticateToken = async (req, res, next) => {
       return next();
     });
   } catch (err) {
-    return res.status(500).json({ msg: 'Something went wrong.' });
+    return next(err);
   }
 };
 

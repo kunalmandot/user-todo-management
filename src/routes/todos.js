@@ -1,33 +1,59 @@
 const express = require('express');
 
+const {
+  getTodos,
+  getTrashedTodos,
+  postTodo,
+  getTodo,
+  putTodo,
+  deleteTodo,
+  putTodoToTrash,
+  putRestoreTodo,
+  postShareTodo,
+  deleteUnshareTodo,
+  postTask,
+  putTask,
+  putTaskStatus,
+  deleteTask,
+} = require('../components/todo/todo.controller');
+const authenticateToken = require('../middlewares/authenticate-token');
+
 const router = express.Router();
 
+router.use(authenticateToken);
+
 router.route('/')
-  .get()
-  .post();
+  .get(getTodos)
+  .post(postTodo);
+
+router.route('/trashed')
+  .get(getTrashedTodos);
 
 router.route('/:todoId')
-  .get()
-  .put()
-  .delete();
+  .get(getTodo)
+  .put(putTodo)
+  .delete(deleteTodo);
 
 router.route('/:todoId/move-to-trash')
-  .put();
+  .put(putTodoToTrash);
 
 router.route('/:todoId/restore')
-  .put();
+  .put(putRestoreTodo);
 
 router.route('/:todoId/share')
-  .post();
+  .post(postShareTodo);
 
-router.route('/:todoId/unshare')
-  .delete();
+router.route('/:todoId/unshare/:sharedWithUserId')
+  .delete(deleteUnshareTodo);
 
 router.route('/:todoId/tasks')
-  .post();
+  .post(postTask);
 
 router.route('/:todoId/tasks/:taskId')
-  .put()
-  .delete();
+  .put(putTask)
+  .delete(deleteTask);
+
+router.route('/:todoId/tasks/:taskId/change-status')
+  .put(putTaskStatus);
 
 module.exports = router;

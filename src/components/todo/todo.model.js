@@ -10,9 +10,6 @@ const SharedWithSchema = mongoose.Schema({
     required: true,
     default: Date.now,
   },
-  deletedAt: {
-    type: Date,
-  },
 });
 
 const TaskSchema = mongoose.Schema({
@@ -39,15 +36,6 @@ const TaskSchema = mongoose.Schema({
       ref: 'User',
     },
   },
-  deleted: {
-    at: {
-      type: Date,
-    },
-    by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  },
 });
 
 const TodoSchema = mongoose.Schema({
@@ -64,7 +52,7 @@ const TodoSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  task: {
+  tasks: {
     type: [TaskSchema],
     default: undefined,
   },
@@ -97,7 +85,7 @@ const TodoSchema = mongoose.Schema({
       ref: 'User',
     },
   },
-  deleted: {
+  statusChanged: {
     at: {
       type: Date,
     },
@@ -109,7 +97,5 @@ const TodoSchema = mongoose.Schema({
 });
 
 TodoSchema.index({ createdBy: 1, title: 1 }, { unique: true });
-TodoSchema.index({ title: 1, task: 1 }, { unique: true });
-TodoSchema.index({ title: 1, sharedWith: 1 }, { unique: true });
 
 module.exports = mongoose.model('Todo', TodoSchema);

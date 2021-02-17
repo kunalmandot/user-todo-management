@@ -13,7 +13,7 @@ const { sendGreetingEmail } = require('../../utils/node-mailer');
 
 const comparePassword = async (pass1, pass2) => bcrypt.compare(pass1, pass2);
 
-const generateAccessToken = (userId) => jwt.sign({ userId }, 'random string', { expiresIn: '30d' });
+const generateAccessToken = (userId, userEmail) => jwt.sign({ userId, userEmail }, 'random string', { expiresIn: '30d' });
 
 const generateHashedPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
@@ -25,19 +25,16 @@ const signup = async (req, res, next) => {
     const result = await signupSchema.validateAsync(req.body);
 
     const user = await createUser(result.email, result.password);
-    if (user) {
-      sendGreetingEmail(user.email);
-      return res.status(201).json({ msg: 'Signed up successfully.' });
-    }
-    return next();
+    sendGreetingEmail(user.email);
+    return res.status(201).json({ msg: 'Signed up successfully.' });
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(422).json({ msg: err.message });
+      return res.status(400).json({ msg: err.message });
     }
     if (err.name === 'MongoError' && err.code === 11000) {
-      return res.status(400).json({ msg: 'Email already taken.' });
+      return res.status(422).json({ msg: 'Email already taken.' });
     }
-    return next();
+    return next(err);
   }
 };
 
@@ -47,15 +44,15 @@ const login = async (req, res, next) => {
 
     const user = await findUserByEmail(result.email);
     if (!user) {
-      return res.status(400).json({ msg: 'Email is not valid.' });
+      return res.status(404).json({ msg: 'Email was not found.' });
     }
 
     const validUser = await comparePassword(result.password, user.password);
     if (!validUser) {
-      return res.status(400).json({ msg: 'Incorrect password.' });
+      return res.status(401).json({ msg: 'Incorrect password.' });
     }
 
-    const token = generateAccessToken(user._id);
+    const token = generateAccessToken(user._id, user.email);
     res.cookie('access_token', token, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
@@ -63,9 +60,9 @@ const login = async (req, res, next) => {
     return res.json({ msg: 'Logged in successfully.' });
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(422).json({ msg: err.message });
+      return res.status(400).json({ msg: err.message });
     }
-    return next();
+    return next(err);
   }
 };
 
@@ -76,34 +73,31 @@ const changePassword = async (req, res, next) => {
     const { userId } = req.user;
 
     const user = await findUserById(userId);
-    if (user) {
-      const validUser = await comparePassword(result.oldPassword, user.password);
-      if (!validUser) {
-        return res.status(400).json({ msg: 'Old password should be correct.' });
-      }
-      const hashedPassword = await generateHashedPassword(result.newPassword);
-      await updateUserPasswordById(userId, hashedPassword);
-      return res.json({ msg: 'You changed password successfully.' });
+
+    const validUser = await comparePassword(result.oldPassword, user.password);
+    if (!validUser) {
+      return res.status(401).json({ msg: 'Old password should be correct.' });
     }
-    return next();
+
+    const hashedPassword = await generateHashedPassword(result.newPassword);
+    await updateUserPasswordById(userId, hashedPassword);
+    return res.json({ msg: 'You changed password successfully.' });
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(422).json({ msg: err.message });
+      return res.status(400).json({ msg: err.message });
     }
-    return next();
+    return next(err);
   }
 };
 
 const logout = async (req, res, next) => {
   try {
-    const blackListToken = await createBlackListToken(req.cookies.access_token);
-    if (blackListToken) {
-      res.clearCookie('access_token');
-      return res.json({ msg: 'You logged out successfully.' });
-    }
-    return next();
+    await createBlackListToken(req.cookies.access_token);
+
+    res.clearCookie('access_token');
+    return res.json({ msg: 'You logged out successfully.' });
   } catch (err) {
-    return next();
+    return next(err);
   }
 };
 

@@ -12,16 +12,39 @@ const transporter = nodeMailer.createTransport({
   secure: true,
 });
 
-const sendGreetingEmail = (email) => {
+const sendGreetingEmail = (toEmail) => {
   const mailData = {
     from: mailUserName,
-    to: email,
+    to: toEmail,
     subject: 'Greeting from user todo management',
-    text: 'Welcome to the user todo management',
+    text: 'Welcome to the user todo management.',
+  };
+  return transporter.sendMail(mailData);
+};
+
+const sendSharingEmail = (toEmail, selfEmail, todoTitle) => {
+  const mailData = {
+    from: mailUserName,
+    to: toEmail,
+    subject: 'Sharing notification',
+    html: `<p>${selfEmail} has shared a todo "${todoTitle}" with you.</p>`
+          + '<p><a href="http://localhost:5000/api/todos/">Click here</a> to see.</p>',
+  };
+  return transporter.sendMail(mailData);
+};
+
+const sendUnsharingEmail = (toEmail, selfEmail, todoTitle) => {
+  const mailData = {
+    from: mailUserName,
+    to: toEmail,
+    subject: 'Unsharing notification',
+    text: `${selfEmail} has Unshared ${todoTitle} from you.`,
   };
   return transporter.sendMail(mailData);
 };
 
 module.exports = {
   sendGreetingEmail,
+  sendSharingEmail,
+  sendUnsharingEmail,
 };

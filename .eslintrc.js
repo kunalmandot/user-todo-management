@@ -16,6 +16,6 @@ module.exports = {
     // 'import/no-extraneous-dependencies': 0,
     // 'no-undef': 0,
     'no-underscore-dangle': 0,
-    'max-len': [2, 110],
+    'max-len': [2, 130],
   },
 };
