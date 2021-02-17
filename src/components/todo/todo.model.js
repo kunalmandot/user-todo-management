@@ -88,7 +88,7 @@ const TodoSchema = mongoose.Schema({
       ref: 'User',
     },
   },
-  trashed: {
+  statusChanged: {
     at: {
       type: Date,
     },

@@ -1,8 +1,11 @@
 const {
   findTodosByCreateBy,
+  findTrashedTodosByCreateBy,
   createTodo,
   findTodoById,
+  findTrashedTodoById,
   updateTodoById,
+  updateTodoStatusById,
   deleteTodoById,
   addTaskToTodoByTodoId,
   updateTaskTextByTodoIdAndTaskId,
@@ -27,7 +30,7 @@ const validateTodo = async (userId, todoId) => {
   return todo;
 };
 
-const validateTask = async (tasks, taskId) => {
+const validateTask = (tasks, taskId) => {
   if (taskId.length !== 24) {
     return false;
   }
@@ -62,6 +65,18 @@ const getTodos = async (req, res, next) => {
       return res.json({ msg: 'You do not have any todos.' });
     }
     return res.json(todos);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+const getTrashedTodos = async (req, res, next) => {
+  try {
+    const trashedTodos = await findTrashedTodosByCreateBy(req.user.userId);
+    if (trashedTodos.length === 0) {
+      return res.json({ msg: 'You do not have any trashed todos.' });
+    }
+    return res.json(trashedTodos);
   } catch (err) {
     return next(err);
   }
@@ -137,6 +152,45 @@ const deleteTodo = async (req, res, next) => {
   }
 };
 
+const putTodoToTrash = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const { todoId } = req.params;
+
+    if (await validateTodo(userId, todoId) === false) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+
+    const trashedTodo = await updateTodoStatusById(todoId, userId, false);
+    return res.json({ msg: 'Todo was moved to trash successfully.', todo: trashedTodo });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+const putRestoreTodo = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const { todoId } = req.params;
+
+    if (todoId.length !== 24) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+    const todo = await findTrashedTodoById(todoId);
+    if (todo === null) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+    if (String(todo.createdBy) !== userId) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+
+    const restoredTodo = await updateTodoStatusById(todoId, userId, true);
+    return res.json({ msg: 'Todo was restored successfully.', todo: restoredTodo });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const postTask = async (req, res, next) => {
   try {
     const { todoId } = req.params;
@@ -174,7 +228,7 @@ const putTask = async (req, res, next) => {
 
     const result = await createOrUpdateTaskSchema.validateAsync(req.body);
 
-    if (await validateTask(todo.tasks, taskId) === false) {
+    if (validateTask(todo.tasks, taskId) === false) {
       return throwResourceNotFoundError(res, taskId);
     }
 
@@ -202,7 +256,7 @@ const putTaskStatus = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    const task = await validateTask(todo.tasks, taskId);
+    const task = validateTask(todo.tasks, taskId);
     if (task === false) {
       return throwResourceNotFoundError(res, taskId);
     }
@@ -225,7 +279,7 @@ const deleteTask = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    if (await validateTask(todo.tasks, taskId) === false) {
+    if (validateTask(todo.tasks, taskId) === false) {
       return throwResourceNotFoundError(res, taskId);
     }
 
@@ -238,10 +292,13 @@ const deleteTask = async (req, res, next) => {
 
 module.exports = {
   getTodos,
+  getTrashedTodos,
   postTodo,
   getTodo,
   putTodo,
   deleteTodo,
+  putTodoToTrash,
+  putRestoreTodo,
   postTask,
   putTask,
   putTaskStatus,

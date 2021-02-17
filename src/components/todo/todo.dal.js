@@ -14,15 +14,25 @@ const createTodo = async (createdBy, title, labelText, labelColour) => {
 
 const findTodosByCreateBy = async (createdBy) => Todo.find({ $and: [{ createdBy }, { isActive: true }] });
 
-const findTodoById = async (id) => Todo.findById(id);
+const findTrashedTodosByCreateBy = async (createdBy) => Todo.find({ $and: [{ createdBy }, { isActive: false }] });
 
-const updateTodoById = async (userId, todoId, title, labelText, labelColour) => Todo.findOneAndUpdate(
-  { _id: todoId },
+const findTodoById = async (todoId) => Todo.findOne({ $and: [{ _id: todoId }, { isActive: true }] });
+
+const findTrashedTodoById = async (todoId) => Todo.findOne({ $and: [{ _id: todoId }, { isActive: false }] });
+
+const updateTodoById = async (userId, todoId, title, labelText, labelColour) => Todo.findByIdAndUpdate(
+  todoId,
   { $set: { title, label: { text: labelText, colour: labelColour }, updated: { at: new Date(), by: userId } } },
   { new: true },
 );
 
-const deleteTodoById = async (id) => Todo.deleteOne({ _id: id });
+const updateTodoStatusById = async (todoId, userId, todoStatus) => Todo.findByIdAndUpdate(
+  todoId,
+  { $set: { isActive: todoStatus }, statusChanged: { at: new Date(), by: userId } },
+  { new: true },
+);
+
+const deleteTodoById = async (todoId) => Todo.deleteOne({ _id: todoId });
 
 const addTaskToTodoByTodoId = async (todoId, taskText) => Todo.findByIdAndUpdate(
   todoId,
@@ -50,9 +60,12 @@ const deleteTaskByTodoIdAndTaskId = async (todoId, taskId) => Todo.findByIdAndUp
 
 module.exports = {
   findTodosByCreateBy,
+  findTrashedTodosByCreateBy,
   createTodo,
   findTodoById,
+  findTrashedTodoById,
   updateTodoById,
+  updateTodoStatusById,
   deleteTodoById,
   addTaskToTodoByTodoId,
   updateTaskTextByTodoIdAndTaskId,

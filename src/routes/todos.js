@@ -2,10 +2,13 @@ const express = require('express');
 
 const {
   getTodos,
+  getTrashedTodos,
   postTodo,
   getTodo,
   putTodo,
   deleteTodo,
+  putTodoToTrash,
+  putRestoreTodo,
   postTask,
   putTask,
   putTaskStatus,
@@ -21,19 +24,19 @@ router.route('/')
   .get(getTodos)
   .post(postTodo);
 
+router.route('/trashed')
+  .get(getTrashedTodos);
+
 router.route('/:todoId')
   .get(getTodo)
   .put(putTodo)
   .delete(deleteTodo);
 
-router.route('/trashed')
-  .get();
-
 router.route('/:todoId/move-to-trash')
-  .put();
+  .put(putTodoToTrash);
 
 router.route('/:todoId/restore')
-  .put();
+  .put(putRestoreTodo);
 
 // router.route('/:todoId/share')
 //   .post();
