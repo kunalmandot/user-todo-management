@@ -7,16 +7,19 @@ const {
   updateTodoById,
   updateTodoStatusById,
   deleteTodoById,
+  addSharedWithToTodoId,
+  deleteSharedWithByTodoIdAndSharedWithId,
   addTaskToTodoByTodoId,
   updateTaskTextByTodoIdAndTaskId,
   updateTaskStatusByTodoIdAndTaskId,
   deleteTaskByTodoIdAndTaskId,
 } = require('./todo.dal');
-const { createOrUpdateTodoSchema, createOrUpdateTaskSchema } = require('./todo.validation');
+const { createOrUpdateTodoSchema, createOrUpdateTaskSchema, shareTodoSchema } = require('./todo.validation');
+const { sendSharingEmail, sendUnsharingEmail } = require('../../utils/node-mailer');
 
 const throwResourceNotFoundError = (res, id) => res.status(404).json({ msg: `The item with id ${id} was not found.` });
 
-const validateTodo = async (userId, todoId) => {
+const validateTodo = async (userId, todoId, userEmail) => {
   if (todoId.length !== 24) {
     return false;
   }
@@ -24,7 +27,7 @@ const validateTodo = async (userId, todoId) => {
   if (todo === null) {
     return false;
   }
-  if (String(todo.createdBy) !== userId) {
+  if (String(todo.createdBy) !== userId && !todo.sharedWith.find((sharedWithUser) => sharedWithUser.email === userEmail)) {
     return false;
   }
   return todo;
@@ -60,7 +63,7 @@ const taskTextExistence = (tasks, taskText, taskId) => {
 
 const getTodos = async (req, res, next) => {
   try {
-    const todos = await findTodosByCreateBy(req.user.userId);
+    const todos = await findTodosByCreateBy(req.user.userId, req.user.userEmail);
     if (todos.length === 0) {
       return res.json({ msg: 'You do not have any todos.' });
     }
@@ -72,7 +75,7 @@ const getTodos = async (req, res, next) => {
 
 const getTrashedTodos = async (req, res, next) => {
   try {
-    const trashedTodos = await findTrashedTodosByCreateBy(req.user.userId);
+    const trashedTodos = await findTrashedTodosByCreateBy(req.user.userId, req.user.userEmail);
     if (trashedTodos.length === 0) {
       return res.json({ msg: 'You do not have any trashed todos.' });
     }
@@ -102,7 +105,7 @@ const postTodo = async (req, res, next) => {
 const getTodo = async (req, res, next) => {
   try {
     const { todoId } = req.params;
-    const todo = await validateTodo(req.user.userId, todoId);
+    const todo = await validateTodo(req.user.userId, todoId, req.user.userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
@@ -114,10 +117,10 @@ const getTodo = async (req, res, next) => {
 
 const putTodo = async (req, res, next) => {
   try {
-    const { userId } = req.user;
+    const { userId, userEmail } = req.user;
     const { todoId } = req.params;
 
-    if (await validateTodo(userId, todoId) === false) {
+    if (await validateTodo(userId, todoId, userEmail) === false) {
       return throwResourceNotFoundError(res, todoId);
     }
 
@@ -140,7 +143,7 @@ const deleteTodo = async (req, res, next) => {
   try {
     const { todoId } = req.params;
 
-    const todo = await validateTodo(req.user.userId, todoId);
+    const todo = await validateTodo(req.user.userId, todoId, req.user.userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
@@ -154,10 +157,10 @@ const deleteTodo = async (req, res, next) => {
 
 const putTodoToTrash = async (req, res, next) => {
   try {
-    const { userId } = req.user;
+    const { userId, userEmail } = req.user;
     const { todoId } = req.params;
 
-    if (await validateTodo(userId, todoId) === false) {
+    if (await validateTodo(userId, todoId, userEmail) === false) {
       return throwResourceNotFoundError(res, todoId);
     }
 
@@ -170,7 +173,7 @@ const putTodoToTrash = async (req, res, next) => {
 
 const putRestoreTodo = async (req, res, next) => {
   try {
-    const { userId } = req.user;
+    const { userId, userEmail } = req.user;
     const { todoId } = req.params;
 
     if (todoId.length !== 24) {
@@ -180,7 +183,7 @@ const putRestoreTodo = async (req, res, next) => {
     if (todo === null) {
       return throwResourceNotFoundError(res, todoId);
     }
-    if (String(todo.createdBy) !== userId) {
+    if (String(todo.createdBy) !== userId && !todo.sharedWith.find((sharedWithUser) => sharedWithUser.email === userEmail)) {
       return throwResourceNotFoundError(res, todoId);
     }
 
@@ -191,11 +194,80 @@ const putRestoreTodo = async (req, res, next) => {
   }
 };
 
+const postShareTodo = async (req, res, next) => {
+  try {
+    const { todoId } = req.params;
+    const { userId, userEmail } = req.user;
+    const todo = await validateTodo(userId, todoId, userEmail);
+    if (todo === false) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+
+    if (userId !== todo.createdBy) {
+      return res.status(400).json({ msg: 'You do not have permission to share.' });
+    }
+
+    const result = await shareTodoSchema.validateAsync(req.body);
+
+    if (userEmail === result.email) {
+      return res.status(400).json({ msg: 'You cannot share with you self.' });
+    }
+
+    if (typeof todo.sharedWith === 'object') {
+      const emailExist = todo.sharedWith.find((sharedWith) => sharedWith.email === result.email);
+      if (emailExist) {
+        return res.status(422).json({ msg: 'You have already shared to this email.' });
+      }
+    }
+
+    sendSharingEmail(result.email, userEmail, todo.title);
+    const sharedTodo = await addSharedWithToTodoId(todoId, result.email);
+    return res.json({ msg: 'Todo shared successfully.', todo: sharedTodo });
+  } catch (err) {
+    if (err.isJoi === true) {
+      return res.status(400).json({ msg: err.message });
+    }
+    return next(err);
+  }
+};
+
+const deleteUnshareTodo = async (req, res, next) => {
+  try {
+    const { todoId, sharedWithUserId } = req.params;
+    const { userId, userEmail } = req.user;
+
+    const todo = await validateTodo(userId, todoId, userEmail);
+    if (todo === false) {
+      return throwResourceNotFoundError(res, todoId);
+    }
+
+    if (userId !== todo.createdBy) {
+      return res.status(400).json({ msg: 'You do not have permission to unshare.' });
+    }
+
+    if (sharedWithUserId.length !== 24) {
+      return throwResourceNotFoundError(res, sharedWithUserId);
+    }
+    if (typeof todo.sharedWith === 'object') {
+      const emailExist = todo.sharedWith.find((sharedWith) => String(sharedWith._id) === sharedWithUserId);
+      if (emailExist) {
+        sendUnsharingEmail(emailExist.email, req.user.userEmail, todo.title);
+        const todoAfterUnshare = await deleteSharedWithByTodoIdAndSharedWithId(todoId, sharedWithUserId);
+        return res.json({ msg: 'Todo unshared successfully.', todo: todoAfterUnshare });
+      }
+      return throwResourceNotFoundError(res, sharedWithUserId);
+    }
+    return throwResourceNotFoundError(res, sharedWithUserId);
+  } catch (err) {
+    return next(err);
+  }
+};
+
 const postTask = async (req, res, next) => {
   try {
     const { todoId } = req.params;
 
-    const todo = await validateTodo(req.user.userId, todoId);
+    const todo = await validateTodo(req.user.userId, todoId, req.user.userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
@@ -219,9 +291,9 @@ const postTask = async (req, res, next) => {
 const putTask = async (req, res, next) => {
   try {
     const { todoId, taskId } = req.params;
-    const { userId } = req.user;
+    const { userId, userEmail } = req.user;
 
-    const todo = await validateTodo(userId, todoId);
+    const todo = await validateTodo(userId, todoId, userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
@@ -249,9 +321,9 @@ const putTask = async (req, res, next) => {
 const putTaskStatus = async (req, res, next) => {
   try {
     const { todoId, taskId } = req.params;
-    const { userId } = req.user;
+    const { userId, userEmail } = req.user;
 
-    const todo = await validateTodo(userId, todoId);
+    const todo = await validateTodo(userId, todoId, userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
@@ -272,9 +344,9 @@ const putTaskStatus = async (req, res, next) => {
 const deleteTask = async (req, res, next) => {
   try {
     const { todoId, taskId } = req.params;
-    const { userId } = req.user;
+    const { userId, userEmail } = req.user;
 
-    const todo = await validateTodo(userId, todoId);
+    const todo = await validateTodo(userId, todoId, userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
     }
@@ -299,6 +371,8 @@ module.exports = {
   deleteTodo,
   putTodoToTrash,
   putRestoreTodo,
+  postShareTodo,
+  deleteUnshareTodo,
   postTask,
   putTask,
   putTaskStatus,

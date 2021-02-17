@@ -13,7 +13,7 @@ const { sendGreetingEmail } = require('../../utils/node-mailer');
 
 const comparePassword = async (pass1, pass2) => bcrypt.compare(pass1, pass2);
 
-const generateAccessToken = (userId) => jwt.sign({ userId }, 'random string', { expiresIn: '30d' });
+const generateAccessToken = (userId, userEmail) => jwt.sign({ userId, userEmail }, 'random string', { expiresIn: '30d' });
 
 const generateHashedPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
@@ -52,7 +52,7 @@ const login = async (req, res, next) => {
       return res.status(401).json({ msg: 'Incorrect password.' });
     }
 
-    const token = generateAccessToken(user._id);
+    const token = generateAccessToken(user._id, user.email);
     res.cookie('access_token', token, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,

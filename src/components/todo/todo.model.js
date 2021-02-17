@@ -10,9 +10,6 @@ const SharedWithSchema = mongoose.Schema({
     required: true,
     default: Date.now,
   },
-  deletedAt: {
-    type: Date,
-  },
 });
 
 const TaskSchema = mongoose.Schema({

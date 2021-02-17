@@ -21,8 +21,15 @@ const createOrUpdateTodoSchema = Joi.object({
     }),
 });
 
-const shareOrUnshareTodoSchema = Joi.object({
-  sharedWithEmail: Joi.string().email().required(),
+const shareTodoSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.base': 'Email should be a type of string.',
+      'string.email': 'Email should be a valid email.',
+      'any.required': 'Email should be present.',
+    }),
 });
 
 const createOrUpdateTaskSchema = Joi.object({
@@ -36,6 +43,6 @@ const createOrUpdateTaskSchema = Joi.object({
 
 module.exports = {
   createOrUpdateTodoSchema,
-  shareOrUnshareTodoSchema,
+  shareTodoSchema,
   createOrUpdateTaskSchema,
 };

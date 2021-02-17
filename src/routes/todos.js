@@ -9,6 +9,8 @@ const {
   deleteTodo,
   putTodoToTrash,
   putRestoreTodo,
+  postShareTodo,
+  deleteUnshareTodo,
   postTask,
   putTask,
   putTaskStatus,
@@ -38,11 +40,11 @@ router.route('/:todoId/move-to-trash')
 router.route('/:todoId/restore')
   .put(putRestoreTodo);
 
-// router.route('/:todoId/share')
-//   .post();
+router.route('/:todoId/share')
+  .post(postShareTodo);
 
-// router.route('/:todoId/unshare')
-//   .delete();
+router.route('/:todoId/unshare/:sharedWithUserId')
+  .delete(deleteUnshareTodo);
 
 router.route('/:todoId/tasks')
   .post(postTask);
