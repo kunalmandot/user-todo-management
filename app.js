@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const { port, host } = require('./config');
 const accounts = require('./src/routes/accounts');
@@ -16,6 +17,8 @@ mongoose.connect('mongodb://localhost:27017/usertodo', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
+
+app.use(cors());
 
 // Body parser middleware
 app.use(express.json());

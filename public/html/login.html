@@ -15,19 +15,18 @@
       <div class="col-md-3"></div>
       <div class="col-md-6">
         <h2>Login</h2>
-        <form>
-          <label for="idEmail" class="form-label">Email</label>
-          <input type="email" class="form-control" id="idEmail">
-          <label for="idPassword" class="form-label">Password</label>
-          <input type="password" class="form-control" id="idPassword">
-          <input type="submit" class="btn btn-primary" value="Login">
-        </form>
+        <div class="alert alert-danger" role="alert" hidden="true" id="idAlert"></div>
+        <label for="idEmail" class="form-label">Email</label>
+        <input type="email" class="form-control" id="idEmail">
+        <label for="idPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="idPassword">
+        <br>
+        <button class="btn btn-primary" id="idLogin">Login</button>
       </div>
       <div class="col-md-3"></div>
     </div>
-
   </div>
-
+  <script src="../js/login.js"></script>
 </body>
 
 </html>
