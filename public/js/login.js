@@ -16,7 +16,7 @@ const login = async () => {
       document.getElementById('idAlert').innerHTML = msg;
       return;
     }
-    // document.location.replace('signup.html');
+    // document.location.replace('dashboard.html');
   } catch (err) {
     document.getElementById('idAlert').hidden = false;
     document.getElementById('idAlert').innerHTML = 'Something went wrong';
