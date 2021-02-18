@@ -40,5 +40,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, host, () => {
-  console.log(`Server started on ${host} : ${port}`);
+  console.log(`Server started on ${host}:${port}`);
 });

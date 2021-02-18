@@ -57,7 +57,7 @@ const login = async (req, res, next) => {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
-    return res.json({ msg: 'Logged in successfully.' });
+    return res.json({ msg: 'Logged in successfully.', token });
   } catch (err) {
     if (err.isJoi === true) {
       return res.status(400).json({ msg: err.message });
@@ -92,9 +92,9 @@ const changePassword = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    await createBlackListToken(req.cookies.access_token);
-
-    res.clearCookie('access_token');
+    // await createBlackListToken(req.cookies.access_token);
+    await createBlackListToken(req.headers.authorization);
+    // res.clearCookie('access_token');
     return res.json({ msg: 'You logged out successfully.' });
   } catch (err) {
     return next(err);
