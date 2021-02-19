@@ -3,7 +3,7 @@ const { findTokenByToken } = require('../components/black-list-token/black-list-
 
 // eslint-disable-next-line consistent-return
 const authenticateToken = async (req, res, next) => {
-  const token = req.cookies.access_token || req.headers.authorization;
+  const token = req.headers.authorization;
   if (!token) {
     return res.status(400).json({ msg: 'There was not any token.' });
   }

@@ -18,11 +18,11 @@ mongoose.connect('mongodb://localhost:27017/usertodo', {
   useFindAndModify: false,
 });
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: true }));
+app.options('*', cors());
 
 // Body parser middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
 // Cookie parser middleware
 app.use(cookieParser());

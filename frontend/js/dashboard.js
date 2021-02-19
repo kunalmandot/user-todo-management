@@ -13,8 +13,8 @@ const logout = async () => {
       headers: {
         authorization: getCookie('access_token'),
       },
+      withCredentials: true,
     });
-    document.cookie = 'access_token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT';
     document.location.replace('login.html');
   } catch (err) {
     document.getElementById('idAlert').hidden = false;
