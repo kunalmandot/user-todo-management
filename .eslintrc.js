@@ -14,7 +14,7 @@ module.exports = {
     'linebreak-style': 0,
     'no-console': 0,
     // 'import/no-extraneous-dependencies': 0,
-    // 'no-undef': 0,
+    'no-undef': 0,
     'no-underscore-dangle': 0,
     'max-len': [2, 130],
   },

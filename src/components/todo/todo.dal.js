@@ -12,17 +12,19 @@ const createTodo = async (createdBy, title, labelText, labelColour) => {
   return todo.save();
 };
 
-const findTodosByCreateBy = async (userId, userEmail) => Todo.find({
-  $and: [
-    {
-      $or: [
-        { createdBy: userId },
-        { 'sharedWith.email': userEmail },
-      ],
-    },
-    { isActive: true },
-  ],
-});
+const findTodosByCreateBy = async (userId, userEmail) => Todo.find(
+  {
+    $and: [
+      {
+        $or: [{ createdBy: userId }, { 'sharedWith.email': userEmail }],
+      },
+      { isActive: true },
+    ],
+  },
+  {
+    createdBy: 0, sharedWith: 0, tasks: 0, isActive: 0, statusChanged: 0,
+  },
+);
 
 const findTrashedTodosByCreateBy = async (userId, userEmail) => Todo.find({
   $and: [

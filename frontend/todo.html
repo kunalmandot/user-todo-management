@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Dashboard</title>
+  <title>Todo</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
@@ -21,10 +21,6 @@
           <a class="nav-link active" href="dashboard.html">Home</a>
         </li>
         <li class="nav-item">
-          <!-- <button class="nav-link" data-toggle="modal" data-target="#myModal">Create Todo</button> -->
-          <a class="nav-link" href="#" data-toggle="modal" data-target="#myModal">Create Todo</a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link" href="change-password.html">Change Password</a>
         </li>
         <li class="nav-item">
@@ -35,7 +31,13 @@
   </nav>
   <div class="container">
     <div class="alert alert-danger" role="alert" hidden="true" id="idAlert"></div>
-    <div class="row row-cols-1 row-cols-md-3 g-4" id="idTodoContainer"></div>
+    <div class="row" id="idTodoContainer"></div>
+    <button class="btn btn-success" style='margin-top:20px' id="idUpdate">Update</button>
+    <button class="btn btn-primary" style='margin-top:20px'id="idshare">Share</button>
+    <button class="btn btn-warning" style='margin-top:20px' id="idTrash">Trash</button>
+    <button class="btn btn-danger" style='margin-top:20px' id="idDelete">Delete</button>
+    
+    
     <div class="modal" id="myModal">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -67,7 +69,7 @@
     </div>
   </div>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script src="./js/dashboard.js"></script>
+  <script src="./js/todo.js"></script>
 </body>
 
 </html>
