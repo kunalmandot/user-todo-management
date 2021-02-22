@@ -5,6 +5,23 @@ function getCookie(cookiename) {
   return decodeURIComponent(cookiestring ? cookiestring.toString().replace(/^[^=]+./, '') : '');
 }
 
+const logout = async () => {
+  try {
+    await axios({
+      method: 'DELETE',
+      url: 'http://localhost:5000/api/accounts/logout',
+      headers: {
+        authorization: getCookie('access_token'),
+      },
+      withCredentials: true,
+    });
+    document.location.replace('login.html');
+  } catch (err) {
+    document.getElementById('idAlert').hidden = false;
+    document.getElementById('idAlert').innerHTML = err.response.data.msg;
+  }
+};
+
 const pageLoad = async () => {
   try {
     const urlParams = new URLSearchParams(window.location.search);
@@ -71,7 +88,7 @@ const pageLoad = async () => {
           </table>
         </div>`;
     }
-    if (response.data.sharedWith) {
+    if (response.data.sharedWith.length > 0) {
       str += `<div class="col-md-3" style='margin-top:20px'>Shared with</div>
       <div class="col-md-12" style='margin-top:20px'>
         <table class="table">
@@ -87,14 +104,13 @@ const pageLoad = async () => {
         str += `<tr>
                 <td>${element.email}</td>
                 <td>${element.createdAt}</td>
-                <td><a href="#">Unshare</a></td>
+                <td><button class="btn btn-danger" onclick="unshareTodo('${element._id}')">Unshare</button></td>
               </tr>`;
       });
       str += `</tbody>
         </table>
       </div>`;
     }
-
     container.innerHTML = str;
   } catch (err) {
     document.getElementById('idAlert').hidden = false;
@@ -102,4 +118,48 @@ const pageLoad = async () => {
   }
 };
 
+const shareTodo = async () => {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const todoId = urlParams.get('todoId');
+    await axios({
+      method: 'POST',
+      url: `http://localhost:5000/api/todos/${todoId}/share`,
+      data: {
+        email: document.querySelector('#idSharedWithEmail').value,
+      },
+      headers: {
+        authorization: getCookie('access_token'),
+      },
+    });
+    window.location.reload();
+  } catch (err) {
+    document.getElementById('idAlert').hidden = false;
+    document.getElementById('idAlert').innerHTML = err.response.data.msg;
+  }
+};
+
+// eslint-disable-next-line no-unused-vars
+const unshareTodo = async (sharedWithUserId) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const todoId = urlParams.get('todoId');
+  console.log(sharedWithUserId);
+  try {
+    await axios({
+      method: 'DELETE',
+      url: `http://localhost:5000/api/todos/${todoId}/unshare/${sharedWithUserId}`,
+      headers: {
+        authorization: getCookie('access_token'),
+      },
+    });
+    window.location.reload();
+  } catch (err) {
+    document.getElementById('idAlert').hidden = false;
+    document.getElementById('idAlert').innerHTML = err.response.data.msg;
+  }
+};
+
 window.addEventListener('load', pageLoad);
+document.getElementById('idLogout').addEventListener('click', logout);
+document.getElementById('idShare').addEventListener('click', shareTodo);
+document.getElementById('idTrash').addEventListener('click', trashTodo);

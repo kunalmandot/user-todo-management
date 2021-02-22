@@ -55,8 +55,7 @@ const pageLoad = async () => {
       </div>`;
     }
   } catch (err) {
-    document.getElementById('idAlert').hidden = false;
-    document.getElementById('idAlert').innerHTML = err.response.data.msg;
+    window.location.replace('login.html');
   }
 };
 

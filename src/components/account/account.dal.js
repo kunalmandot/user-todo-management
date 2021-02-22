@@ -5,7 +5,8 @@ const createUser = async (email, password) => {
     email,
     password,
   });
-  return user.save();
+  const createdUser = user.save();
+  return createdUser;
 };
 
 const findUserByEmail = async (email) => User.findOne({ email });

@@ -4,7 +4,8 @@ const createBlackListToken = async (token) => {
   const blackListToken = new BlackListToken({
     token,
   });
-  return blackListToken.save();
+  const blackListedToken = blackListToken.save();
+  return blackListedToken;
 };
 
 const findTokenByToken = async (token) => BlackListToken.findOne({ token });

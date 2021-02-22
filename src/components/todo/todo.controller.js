@@ -7,7 +7,7 @@ const {
   updateTodoById,
   updateTodoStatusById,
   deleteTodoById,
-  addSharedWithToTodoId,
+  addSharedWithToTodoByTodoId,
   deleteSharedWithByTodoIdAndSharedWithId,
   addTaskToTodoByTodoId,
   updateTaskTextByTodoIdAndTaskId,
@@ -203,7 +203,7 @@ const postShareTodo = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    if (userId !== todo.createdBy) {
+    if (userId !== String(todo.createdBy)) {
       return res.status(400).json({ msg: 'You do not have permission to share.' });
     }
 
@@ -220,8 +220,8 @@ const postShareTodo = async (req, res, next) => {
       }
     }
 
+    const sharedTodo = await addSharedWithToTodoByTodoId(todoId, result.email);
     sendSharingEmail(result.email, userEmail, todo.title);
-    const sharedTodo = await addSharedWithToTodoId(todoId, result.email);
     return res.json({ msg: 'Todo shared successfully.', todo: sharedTodo });
   } catch (err) {
     if (err.isJoi === true) {
@@ -241,7 +241,7 @@ const deleteUnshareTodo = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    if (userId !== todo.createdBy) {
+    if (userId !== String(todo.createdBy)) {
       return res.status(400).json({ msg: 'You do not have permission to unshare.' });
     }
 
@@ -251,8 +251,8 @@ const deleteUnshareTodo = async (req, res, next) => {
     if (typeof todo.sharedWith === 'object') {
       const emailExist = todo.sharedWith.find((sharedWith) => String(sharedWith._id) === sharedWithUserId);
       if (emailExist) {
-        sendUnsharingEmail(emailExist.email, req.user.userEmail, todo.title);
         const todoAfterUnshare = await deleteSharedWithByTodoIdAndSharedWithId(todoId, sharedWithUserId);
+        sendUnsharingEmail(emailExist.email, req.user.userEmail, todo.title);
         return res.json({ msg: 'Todo unshared successfully.', todo: todoAfterUnshare });
       }
       return throwResourceNotFoundError(res, sharedWithUserId);

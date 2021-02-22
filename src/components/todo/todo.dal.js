@@ -9,15 +9,14 @@ const createTodo = async (createdBy, title, labelText, labelColour) => {
       colour: labelColour,
     },
   });
-  return todo.save();
+  const createdTodo = todo.save();
+  return createdTodo;
 };
 
 const findTodosByCreateBy = async (userId, userEmail) => Todo.find(
   {
     $and: [
-      {
-        $or: [{ createdBy: userId }, { 'sharedWith.email': userEmail }],
-      },
+      { $or: [{ createdBy: userId }, { 'sharedWith.email': userEmail }] },
       { isActive: true },
     ],
   },
@@ -26,17 +25,17 @@ const findTodosByCreateBy = async (userId, userEmail) => Todo.find(
   },
 );
 
-const findTrashedTodosByCreateBy = async (userId, userEmail) => Todo.find({
-  $and: [
-    {
-      $or: [
-        { createdBy: userId },
-        { 'sharedWith.email': userEmail },
-      ],
-    },
-    { isActive: false },
-  ],
-});
+const findTrashedTodosByCreateBy = async (userId, userEmail) => Todo.find(
+  {
+    $and: [
+      { $or: [{ createdBy: userId }, { 'sharedWith.email': userEmail }] },
+      { isActive: false },
+    ],
+  },
+  {
+    createdBy: 0, sharedWith: 0, tasks: 0, isActive: 0,
+  },
+);
 
 const findTodoById = async (todoId) => Todo.findOne({ $and: [{ _id: todoId }, { isActive: true }] });
 
@@ -56,7 +55,7 @@ const updateTodoStatusById = async (todoId, userId, todoStatus) => Todo.findById
 
 const deleteTodoById = async (todoId) => Todo.deleteOne({ _id: todoId });
 
-const addSharedWithToTodoId = async (todoId, sharedWithEmail) => Todo.findByIdAndUpdate(
+const addSharedWithToTodoByTodoId = async (todoId, sharedWithEmail) => Todo.findByIdAndUpdate(
   todoId,
   { $push: { sharedWith: { email: sharedWithEmail } } },
   { new: true },
@@ -101,7 +100,7 @@ module.exports = {
   updateTodoById,
   updateTodoStatusById,
   deleteTodoById,
-  addSharedWithToTodoId,
+  addSharedWithToTodoByTodoId,
   deleteSharedWithByTodoIdAndSharedWithId,
   addTaskToTodoByTodoId,
   updateTaskTextByTodoIdAndTaskId,
