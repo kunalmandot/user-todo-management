@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-const { signupSchema, loginSchema, changePasswordSchema } = require('./account.validation');
 const {
   createUser,
   findUserByEmail,
@@ -22,15 +21,10 @@ const generateHashedPassword = async (password) => {
 
 const signup = async (req, res, next) => {
   try {
-    const result = await signupSchema.validateAsync(req.body);
-
-    const user = await createUser(result.email, result.password);
+    const user = await createUser(req.body.email, req.body.password);
     sendGreetingEmail(user.email);
     return res.status(201).json({ msg: 'Signed up successfully.' });
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
-    }
     if (err.name === 'MongoError' && err.code === 11000) {
       return res.status(422).json({ msg: 'Email already taken.' });
     }
@@ -40,14 +34,12 @@ const signup = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const result = await loginSchema.validateAsync(req.body);
-
-    const user = await findUserByEmail(result.email);
+    const user = await findUserByEmail(req.body.email);
     if (!user) {
       return res.status(404).json({ msg: 'Email was not found.' });
     }
 
-    const validUser = await comparePassword(result.password, user.password);
+    const validUser = await comparePassword(req.body.password, user.password);
     if (!validUser) {
       return res.status(401).json({ msg: 'Incorrect password.' });
     }
@@ -67,18 +59,16 @@ const login = async (req, res, next) => {
 
 const changePassword = async (req, res, next) => {
   try {
-    const result = await changePasswordSchema.validateAsync(req.body);
-
     const { userId } = req.user;
 
     const user = await findUserById(userId);
 
-    const validUser = await comparePassword(result.oldPassword, user.password);
+    const validUser = await comparePassword(req.body.oldPassword, user.password);
     if (!validUser) {
       return res.status(401).json({ msg: 'Old password should be correct.' });
     }
 
-    const hashedPassword = await generateHashedPassword(result.newPassword);
+    const hashedPassword = await generateHashedPassword(req.body.newPassword);
     await updateUserPasswordById(userId, hashedPassword);
     return res.json({ msg: 'You changed password successfully.' });
   } catch (err) {

@@ -3,20 +3,26 @@ const express = require('express');
 const {
   getTodos,
   getTrashedTodos,
-  postTodo,
+  createTodo,
   getTodo,
-  putTodo,
+  updateTodo,
   deleteTodo,
-  putTodoToTrash,
-  putRestoreTodo,
-  postShareTodo,
-  deleteUnshareTodo,
-  postTask,
-  putTask,
-  putTaskStatus,
+  moveTodoToTrash,
+  restoreTodo,
+  shareTodo,
+  unshareTodo,
+  createTask,
+  updateTaskText,
+  updateTaskStatus,
   deleteTask,
 } = require('../components/todo/todo.controller');
 const authenticateToken = require('../middlewares/authenticate-token');
+const {
+  createOrUpdateTodoValidation,
+  shareTodoValidation,
+  createOrUpdateTaskValidation
+} = require('../components/todo/todo.middleware');
+const { createOrUpdateTaskSchema } = require('../components/todo/todo.validation');
 
 const router = express.Router();
 
@@ -24,36 +30,36 @@ router.use(authenticateToken);
 
 router.route('/')
   .get(getTodos)
-  .post(postTodo);
+  .post(createOrUpdateTodoValidation, createTodo);
 
 router.route('/trashed')
   .get(getTrashedTodos);
 
 router.route('/:todoId')
   .get(getTodo)
-  .put(putTodo)
+  .put(createOrUpdateTodoValidation, updateTodo)
   .delete(deleteTodo);
 
 router.route('/:todoId/move-to-trash')
-  .put(putTodoToTrash);
+  .put(moveTodoToTrash);
 
 router.route('/:todoId/restore')
-  .put(putRestoreTodo);
+  .put(restoreTodo);
 
 router.route('/:todoId/share')
-  .post(postShareTodo);
+  .post(shareTodoValidation, shareTodo);
 
 router.route('/:todoId/unshare/:sharedWithUserId')
-  .delete(deleteUnshareTodo);
+  .delete(unshareTodo);
 
 router.route('/:todoId/tasks')
-  .post(postTask);
+  .post(createOrUpdateTaskValidation, createTask);
 
 router.route('/:todoId/tasks/:taskId')
-  .put(putTask)
+  .put(createOrUpdateTaskValidation, updateTaskText)
   .delete(deleteTask);
 
 router.route('/:todoId/tasks/:taskId/change-status')
-  .put(putTaskStatus);
+  .put(updateTaskStatus);
 
 module.exports = router;

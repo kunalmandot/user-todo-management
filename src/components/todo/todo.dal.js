@@ -1,6 +1,6 @@
 const Todo = require('./todo.model');
 
-const createTodo = async (createdBy, title, labelText, labelColour) => {
+const saveTodo = async (createdBy, title, labelText, labelColour) => {
   const todo = new Todo({
     createdBy,
     title,
@@ -94,7 +94,7 @@ const deleteTaskByTodoIdAndTaskId = async (todoId, taskId) => Todo.findByIdAndUp
 module.exports = {
   findTodosByCreateBy,
   findTrashedTodosByCreateBy,
-  createTodo,
+  saveTodo,
   findTodoById,
   findTrashedTodoById,
   updateTodoById,

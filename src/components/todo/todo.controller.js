@@ -1,7 +1,7 @@
 const {
   findTodosByCreateBy,
   findTrashedTodosByCreateBy,
-  createTodo,
+  saveTodo,
   findTodoById,
   findTrashedTodoById,
   updateTodoById,
@@ -85,16 +85,11 @@ const getTrashedTodos = async (req, res, next) => {
   }
 };
 
-const postTodo = async (req, res, next) => {
+const createTodo = async (req, res, next) => {
   try {
-    const result = await createOrUpdateTodoSchema.validateAsync(req.body);
-
-    const todo = await createTodo(req.user.userId, result.title, result.labelText, result.labelColour);
+    const todo = await saveTodo(req.user.userId, req.body.title, req.body.labelText, req.body.labelColour);
     return res.json({ msg: 'Todo created successfully.', todo });
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
-    }
     if (err.name === 'MongoError' && err.code === 11000) {
       return res.status(422).json({ msg: 'Todo title already taken.' });
     }
@@ -115,7 +110,7 @@ const getTodo = async (req, res, next) => {
   }
 };
 
-const putTodo = async (req, res, next) => {
+const updateTodo = async (req, res, next) => {
   try {
     const { userId, userEmail } = req.user;
     const { todoId } = req.params;
@@ -124,14 +119,9 @@ const putTodo = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    const result = await createOrUpdateTodoSchema.validateAsync(req.body);
-
-    const updatedTodo = await updateTodoById(userId, todoId, result.title, result.labelText, result.labelColour);
+    const updatedTodo = await updateTodoById(userId, todoId, req.body.title, req.body.labelText, req.body.labelColour);
     return res.json({ msg: 'Todo updated successfully.', todo: updatedTodo });
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
-    }
     if (err.name === 'MongoError' && err.code === 11000) {
       return res.status(422).json({ msg: 'Todo title already taken.' });
     }
@@ -155,7 +145,7 @@ const deleteTodo = async (req, res, next) => {
   }
 };
 
-const putTodoToTrash = async (req, res, next) => {
+const moveTodoToTrash = async (req, res, next) => {
   try {
     const { userId, userEmail } = req.user;
     const { todoId } = req.params;
@@ -171,7 +161,7 @@ const putTodoToTrash = async (req, res, next) => {
   }
 };
 
-const putRestoreTodo = async (req, res, next) => {
+const restoreTodo = async (req, res, next) => {
   try {
     const { userId, userEmail } = req.user;
     const { todoId } = req.params;
@@ -194,10 +184,11 @@ const putRestoreTodo = async (req, res, next) => {
   }
 };
 
-const postShareTodo = async (req, res, next) => {
+const shareTodo = async (req, res, next) => {
   try {
     const { todoId } = req.params;
     const { userId, userEmail } = req.user;
+    const { bodyEmail } = req.body;
     const todo = await validateTodo(userId, todoId, userEmail);
     if (todo === false) {
       return throwResourceNotFoundError(res, todoId);
@@ -207,31 +198,26 @@ const postShareTodo = async (req, res, next) => {
       return res.status(400).json({ msg: 'You do not have permission to share.' });
     }
 
-    const result = await shareTodoSchema.validateAsync(req.body);
-
-    if (userEmail === result.email) {
+    if (userEmail === bodyEmail) {
       return res.status(400).json({ msg: 'You cannot share with you self.' });
     }
 
     if (typeof todo.sharedWith === 'object') {
-      const emailExist = todo.sharedWith.find((sharedWith) => sharedWith.email === result.email);
+      const emailExist = todo.sharedWith.find((sharedWith) => sharedWith.email === bodyEmail);
       if (emailExist) {
         return res.status(422).json({ msg: 'You have already shared to this email.' });
       }
     }
 
-    const sharedTodo = await addSharedWithToTodoByTodoId(todoId, result.email);
-    sendSharingEmail(result.email, userEmail, todo.title);
+    const sharedTodo = await addSharedWithToTodoByTodoId(todoId, bodyEmail);
+    sendSharingEmail(bodyEmail, userEmail, todo.title);
     return res.json({ msg: 'Todo shared successfully.', todo: sharedTodo });
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
-    }
     return next(err);
   }
 };
 
-const deleteUnshareTodo = async (req, res, next) => {
+const unshareTodo = async (req, res, next) => {
   try {
     const { todoId, sharedWithUserId } = req.params;
     const { userId, userEmail } = req.user;
@@ -263,7 +249,7 @@ const deleteUnshareTodo = async (req, res, next) => {
   }
 };
 
-const postTask = async (req, res, next) => {
+const createTask = async (req, res, next) => {
   try {
     const { todoId } = req.params;
 
@@ -272,23 +258,18 @@ const postTask = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    const result = await createOrUpdateTaskSchema.validateAsync(req.body);
-
-    if (taskTextExistence(todo.tasks, result.taskText, null) === true) {
+    if (taskTextExistence(todo.tasks, req.body.taskText, null) === true) {
       return res.status(422).json({ msg: 'Task already taken.' });
     }
 
-    const todoWithTask = await addTaskToTodoByTodoId(todoId, result.taskText);
+    const todoWithTask = await addTaskToTodoByTodoId(todoId, req.body.taskText);
     return res.json({ msg: 'Task created successfully.', todo: todoWithTask });
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
-    }
     return next(err);
   }
 };
 
-const putTask = async (req, res, next) => {
+const updateTaskText = async (req, res, next) => {
   try {
     const { todoId, taskId } = req.params;
     const { userId, userEmail } = req.user;
@@ -298,27 +279,22 @@ const putTask = async (req, res, next) => {
       return throwResourceNotFoundError(res, todoId);
     }
 
-    const result = await createOrUpdateTaskSchema.validateAsync(req.body);
-
     if (validateTask(todo.tasks, taskId) === false) {
       return throwResourceNotFoundError(res, taskId);
     }
 
-    if (taskTextExistence(todo.tasks, result.taskText, taskId) === true) {
+    if (taskTextExistence(todo.tasks, req.body.taskText, taskId) === true) {
       return res.status(422).json({ msg: 'Task already taken.' });
     }
 
-    const updatedTodoWithTask = await updateTaskTextByTodoIdAndTaskId(userId, todoId, taskId, result.taskText);
+    const updatedTodoWithTask = await updateTaskTextByTodoIdAndTaskId(userId, todoId, taskId, req.body.taskText);
     return res.json({ msg: 'Task updated successfully.', todo: updatedTodoWithTask });
   } catch (err) {
-    if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
-    }
     return next(err);
   }
 };
 
-const putTaskStatus = async (req, res, next) => {
+const updateTaskStatus = async (req, res, next) => {
   try {
     const { todoId, taskId } = req.params;
     const { userId, userEmail } = req.user;
@@ -365,16 +341,16 @@ const deleteTask = async (req, res, next) => {
 module.exports = {
   getTodos,
   getTrashedTodos,
-  postTodo,
+  createTodo,
   getTodo,
-  putTodo,
+  updateTodo,
   deleteTodo,
-  putTodoToTrash,
-  putRestoreTodo,
-  postShareTodo,
-  deleteUnshareTodo,
-  postTask,
-  putTask,
-  putTaskStatus,
+  moveTodoToTrash,
+  restoreTodo,
+  shareTodo,
+  unshareTodo,
+  createTask,
+  updateTaskText,
+  updateTaskStatus,
   deleteTask,
 };
