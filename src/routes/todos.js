@@ -20,9 +20,8 @@ const authenticateToken = require('../middlewares/authenticate-token');
 const {
   createOrUpdateTodoValidation,
   shareTodoValidation,
-  createOrUpdateTaskValidation
+  createOrUpdateTaskValidation,
 } = require('../components/todo/todo.middleware');
-const { createOrUpdateTaskSchema } = require('../components/todo/todo.validation');
 
 const router = express.Router();
 

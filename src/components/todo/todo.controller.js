@@ -14,7 +14,6 @@ const {
   updateTaskStatusByTodoIdAndTaskId,
   deleteTaskByTodoIdAndTaskId,
 } = require('./todo.dal');
-const { createOrUpdateTodoSchema, createOrUpdateTaskSchema, shareTodoSchema } = require('./todo.validation');
 const { sendSharingEmail, sendUnsharingEmail } = require('../../utils/node-mailer');
 
 const throwResourceNotFoundError = (res, id) => res.status(404).json({ msg: `The item with id ${id} was not found.` });
