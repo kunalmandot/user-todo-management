@@ -1,4 +1,5 @@
 const { signupSchema, loginSchema, changePasswordSchema } = require('./account.validation');
+const { sendResponse } = require('../../utils/helper');
 
 const signupValidation = async (req, res, next) => {
   try {
@@ -6,7 +7,7 @@ const signupValidation = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
+      return sendResponse(res, 400, err.message);
     }
     return next(err);
   }
@@ -18,7 +19,7 @@ const loginValidation = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
+      return sendResponse(res, 400, err.message);
     }
     return next(err);
   }
@@ -30,7 +31,7 @@ const changePasswordValidation = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
+      return sendResponse(res, 400, err.message);
     }
     return next(err);
   }

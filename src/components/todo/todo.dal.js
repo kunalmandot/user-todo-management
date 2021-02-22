@@ -41,54 +41,46 @@ const findTodoById = async (todoId) => Todo.findOne({ $and: [{ _id: todoId }, { 
 
 const findTrashedTodoById = async (todoId) => Todo.findOne({ $and: [{ _id: todoId }, { isActive: false }] });
 
-const updateTodoById = async (userId, todoId, title, labelText, labelColour) => Todo.findByIdAndUpdate(
-  todoId,
+const updateTodoById = async (userId, todoId, title, labelText, labelColour) => Todo.updateOne(
+  { _id: todoId },
   { $set: { title, label: { text: labelText, colour: labelColour }, updated: { at: new Date(), by: userId } } },
-  { new: true },
 );
 
-const updateTodoStatusById = async (todoId, userId, todoStatus) => Todo.findByIdAndUpdate(
-  todoId,
+const updateTodoStatusById = async (todoId, userId, todoStatus) => Todo.updateOne(
+  { _id: todoId },
   { $set: { isActive: todoStatus }, statusChanged: { at: new Date(), by: userId } },
-  { new: true },
 );
 
 const deleteTodoById = async (todoId) => Todo.deleteOne({ _id: todoId });
 
-const addSharedWithToTodoByTodoId = async (todoId, sharedWithEmail) => Todo.findByIdAndUpdate(
-  todoId,
+const addSharedWithToTodoByTodoId = async (todoId, sharedWithEmail) => Todo.updateOne(
+  { _id: todoId },
   { $push: { sharedWith: { email: sharedWithEmail } } },
-  { new: true },
 );
 
-const deleteSharedWithByTodoIdAndSharedWithId = async (todoId, sharedWithId) => Todo.findByIdAndUpdate(
-  todoId,
+const deleteSharedWithByTodoIdAndSharedWithId = async (todoId, sharedWithId) => Todo.updateOne(
+  { _id: todoId },
   { $pull: { sharedWith: { _id: sharedWithId } } },
-  { new: true },
 );
 
-const addTaskToTodoByTodoId = async (todoId, taskText) => Todo.findByIdAndUpdate(
-  todoId,
+const addTaskToTodoByTodoId = async (todoId, taskText) => Todo.updateOne(
+  { _id: todoId },
   { $push: { tasks: { text: taskText } } },
-  { new: true },
 );
 
-const updateTaskTextByTodoIdAndTaskId = async (userId, todoId, taskId, taskText) => Todo.findOneAndUpdate(
+const updateTaskTextByTodoIdAndTaskId = async (userId, todoId, taskId, taskText) => Todo.updateOne(
   { $and: [{ _id: todoId }, { 'tasks._id': taskId }] },
   { $set: { 'tasks.$.text': taskText, 'tasks.$.updated': { at: new Date(), by: userId } } },
-  { new: true },
 );
 
-const updateTaskStatusByTodoIdAndTaskId = async (userId, todoId, taskId, taskStatus) => Todo.findOneAndUpdate(
+const updateTaskStatusByTodoIdAndTaskId = async (userId, todoId, taskId, taskStatus) => Todo.updateOne(
   { $and: [{ _id: todoId }, { 'tasks._id': taskId }] },
   { $set: { 'tasks.$.checked': taskStatus, 'tasks.$.updated': { at: new Date(), by: userId } } },
-  { new: true },
 );
 
-const deleteTaskByTodoIdAndTaskId = async (todoId, taskId) => Todo.findByIdAndUpdate(
-  todoId,
+const deleteTaskByTodoIdAndTaskId = async (todoId, taskId) => Todo.updateOne(
+  { _id: todoId },
   { $pull: { tasks: { _id: taskId } } },
-  { new: true },
 );
 
 module.exports = {

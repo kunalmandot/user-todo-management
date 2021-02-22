@@ -6,7 +6,7 @@ const createOrUpdateTodoValidation = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
+      return sendResponse(res, 400, err.message);
     }
     return next(err);
   }
@@ -18,7 +18,7 @@ const shareTodoValidation = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
+      return sendResponse(res, 400, err.message);
     }
     return next(err);
   }
@@ -30,7 +30,7 @@ const createOrUpdateTaskValidation = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.isJoi === true) {
-      return res.status(400).json({ msg: err.message });
+      return sendResponse(res, 400, err.message);
     }
     return next(err);
   }
