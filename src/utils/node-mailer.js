@@ -28,7 +28,7 @@ const sendSharingEmail = (toEmail, selfEmail, todoTitle) => {
     to: toEmail,
     subject: 'Sharing notification',
     html: `<p>${selfEmail} has shared a todo "${todoTitle}" with you.</p>`
-          + '<p><a href="http://localhost:5000/api/todos/">Click here</a> to see.</p>',
+          + '<p><a href="http://localhost:5500/frontend/dashboard.html">Click here</a> to see.</p>',
   };
   return transporter.sendMail(mailData);
 };

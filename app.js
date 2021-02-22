@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const { port, host } = require('./config');
 const accounts = require('./src/routes/accounts');
@@ -17,9 +18,11 @@ mongoose.connect('mongodb://localhost:27017/usertodo', {
   useFindAndModify: false,
 });
 
+app.use(cors({ credentials: true, origin: true }));
+app.options('*', cors());
+
 // Body parser middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
 // Cookie parser middleware
 app.use(cookieParser());
@@ -37,5 +40,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, host, () => {
-  console.log(`Server started on ${host} : ${port}`);
+  console.log(`Server started on ${host}:${port}`);
 });
