@@ -23,21 +23,11 @@ const UserSchema = mongoose.Schema({
     required: true,
     default: false,
   },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
-  updated: {
-    at: {
-      type: Date,
-    },
-    by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  },
-});
+}, { timestamps: true });
 
 // eslint-disable-next-line func-names
 UserSchema.pre('save', async function (next) {

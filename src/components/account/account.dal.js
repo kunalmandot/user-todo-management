@@ -15,7 +15,7 @@ const findUserById = async (id) => User.findById(id);
 
 const updateUserPasswordById = async (id, password) => User.updateOne(
   { _id: id },
-  { $set: { password, updated: { at: new Date(), by: id } } },
+  { $set: { password, updatedBy: id } },
 );
 
 module.exports = {
