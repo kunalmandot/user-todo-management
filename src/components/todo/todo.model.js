@@ -22,21 +22,11 @@ const TaskSchema = mongoose.Schema({
     required: true,
     default: false,
   },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
-  updated: {
-    at: {
-      type: Date,
-    },
-    by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  },
-});
+}, { timestamps: true });
 
 const TodoSchema = mongoose.Schema({
   createdBy: {
@@ -71,19 +61,9 @@ const TodoSchema = mongoose.Schema({
     required: true,
     default: true,
   },
-  createdAt: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-  updated: {
-    at: {
-      type: Date,
-    },
-    by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
   statusChanged: {
     at: {
@@ -94,7 +74,7 @@ const TodoSchema = mongoose.Schema({
       ref: 'User',
     },
   },
-});
+}, { timestamps: true });
 
 TodoSchema.index({ createdBy: 1, title: 1 }, { unique: true });
 
