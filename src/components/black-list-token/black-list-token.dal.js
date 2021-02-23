@@ -10,7 +10,13 @@ const createBlackListToken = async (token) => {
 
 const findTokenByToken = async (token) => BlackListToken.findOne({ token });
 
+const getAllBlackListedToken = async () => BlackListToken.find({});
+
+const deleteExpiredToken = async (expiredTokens) => BlackListToken.deleteMany({ token: { $in: expiredTokens } });
+
 module.exports = {
   createBlackListToken,
   findTokenByToken,
+  getAllBlackListedToken,
+  deleteExpiredToken,
 };

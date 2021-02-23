@@ -6,6 +6,7 @@ const morgan = require('morgan');
 
 const { port, host } = require('./config');
 const index = require('./src/routes/index');
+const scheduler = require('./src/schedular/index');
 
 // Init app
 const app = express();
@@ -43,3 +44,5 @@ app.use((err, req, res, next) => {
 app.listen(port, host, () => {
   console.log(`Server started on ${host}:${port}`);
 });
+
+scheduler();
