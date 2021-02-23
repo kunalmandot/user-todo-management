@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { getAllBlackListedToken, deleteExpiredToken } = require('../components/black-list-token/black-list-token.dal');
 
 const schedular = () => {
-  cron.schedule('*/10 * * * * *', async () => {
+  cron.schedule('0 1 * * *', async () => {
     try {
       const expiredTokens = [];
       const blackListedToken = await getAllBlackListedToken();
